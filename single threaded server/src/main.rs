@@ -18,6 +18,9 @@ fn handle_connection(mut stream: TcpStream){
     let mut buffer = [0; 1024];
     stream.read(&mut buffer).unwrap();
 
+    let get = b"GET / HTTP/1.1\r\n";
+
+    if buffer.starts_with(get){
     let contents = fs::read_to_string("index.html").unwrap();
 
     let response = format!(
@@ -28,4 +31,23 @@ fn handle_connection(mut stream: TcpStream){
 
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
+
+    }else{
+
+        let status_line = "HTTP/1.1 404 NOT FOUND";
+        let contents = 
+            fs::read_to_string("404.html").unwrap();
+        
+        let response = format!(
+            "{}\r\nContent-Length: {}\r\n\r\n{}",
+            status_line,
+            contents.len(),
+            contents
+        );
+
+        stream.write(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+    }
+
+    
 }
